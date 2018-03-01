@@ -39,7 +39,7 @@ for filepath in $filelist; do
 		-min_L 30 \
 		-adapter TRUE \
 		-5end  10 \
-		-t 4
+		-t 8
 	echo "finished QC" $filepath | bash ~/Apps/notify-me.sh
 	let i++
 done
