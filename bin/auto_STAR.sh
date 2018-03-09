@@ -21,7 +21,7 @@ find $Iput_path * | grep ^/.*.fastq.gz$ > temp/fastq_list.dat
 fastq_list=$(<temp/fastq_list.dat)
 echo "gzip:" $fastq_list
 for fastq_list_i in fastq_list; do
-	gzip $fastq_list_i
+	pigz $fastq_list_i
 done
 echo "gzip complete"
 
@@ -43,7 +43,7 @@ for filepath in $filelist; do
 	echo "output folder is " $foldername
 
 	# #gzファイルを展開
-	gunzip $filepath
+	unpigz $filepath
 	echo "gunzip complete" $filepath | bash ~/Apps/notify-me.sh
 	echo "gunzip complete" $filepath
 
@@ -59,7 +59,7 @@ for filepath in $filelist; do
 	echo "mapping complete" $Input_fastq
 
  	#展開したfastqを再圧縮
-	gzip $Input_fastq
+	pigz $Input_fastq
  	echo "gzip complete" $Input_fastq | bash ~/Apps/notify-me.sh
  	echo "gzip complete" $Input_fastq
 
