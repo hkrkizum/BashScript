@@ -73,10 +73,6 @@ for filepath in $filelist_foword; do
 	echo "trimmeing complete" | bash ~/Apps/notify-me.sh
 
 	#展開したfastqを再圧縮
-	pigz *.fastq
-	pigz *_log.txt
-
-	#展開したfastqを再圧縮
 	pigz $Input_fastq_foword
 	pigz $Input_fastq_reverse
 	echo "pigz complete, finesh"
