@@ -54,6 +54,7 @@ for filepath in $filelist_foword; do
 	echo "trimmeing complete" 
 	echo "trimmeing complete" | bash ~/Apps/notify-me.sh
 	pigz *.fastq
+	pigz *_log.txt
 	echo "pigz complete, finesh"
 	echo "pigz complete, finesh" | bash ~/Apps/notify-me.sh
 	let i++
