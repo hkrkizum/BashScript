@@ -14,12 +14,8 @@ cd $Output_path
 mkdir -p temp/
 
 # parallel gzip in input dir
-find $Iput_path * | grep ^/.*.fastq$ > temp/fastq_list.dat
-fastq_list=$(<temp/fastq_list.dat)
-echo "gzip:" $fastq_list
-for fastq_list_i in fastq_list; do
-	pigz $fastq_list_i
-done
+fastq_list=`find $Iput_path * | grep ^/.*.fastq$`
+pigz $fastq_list
 echo "gzip complete"
 
 # Get file list
@@ -46,35 +42,29 @@ for filepath in $filelist_foword; do
 	# gzファイルを展開
 	unpigz $foword
 	unpigz $reverse
-	echo "gunzip complete" $filepath
+	echo "gunzip complete"
 
 	#展開したファイルを絶対PATHで取得し、変数へ格納
 	Input_fastq_foword=`find ${Iput_path} * | grep ^/.*_1.fastq$`
 	Input_fastq_reverse=`find ${Iput_path} * | grep ^/.*_2.fastq$`
-	echo $Input_fastq_foword $Input_fastq_reverse
+	echo "QC file is " $Input_fastq_foword $Input_fastq_reverse
 
-	java -jar /home/hikaru/Apps/Trimmomatic-0.38/trimmomatic-0.38.jar \
-		PE \
-	    -threads 8 \
-	    -phred33 \
-	    -trimlog ${foldername}_log.txt \
-	    $Input_fastq_foword \
-	    $Input_fastq_reverse \
-	    ${foldername}_paired_output_1.fastq \
-	    ${foldername}_unpaired_output_1.fastq \
-	    ${foldername}_paired_output_2.fastq \
-	    ${foldername}_unpaired_output_2.fastq \
-	    ILLUMINACLIP:/home/hikaru/Apps/Trimmomatic-0.38/adapters/TruSeq3-PE.fa:2:30:10 \
-	    SLIDINGWINDOW:4:15 \
-	    LEADING:30 \
-	    TRAILING:30 \
-	    MINLEN:30
-	echo "trimmeing complete" 
-	echo "trimmeing complete" | bash ~/Apps/notify-me.sh
+	fastp \
+	--in1 $Input_fastq_foword \
+	--in2 $Input_fastq_reverse \
+	--out1 ${foldername}_output_1.fastq \
+	--out2 ${foldername}_output_2.fastq \
+	--html ${foldername}.html \
+	--json ${foldername}.json \
+	--thread 8 \
+	--qualified_quality_phred 30 \
+	--trim_front1 15
+
+	echo "trimmeing complete" $foldername
+	echo "trimmeing complete" $foldername | bash ~/Apps/notify-me.sh
 
 	#展開したfastqを再圧縮
 	pigz *.fastq
-	pigz *_log.txt
 
 	#展開したfastqを再圧縮
 	pigz $Input_fastq_foword
@@ -83,5 +73,7 @@ for filepath in $filelist_foword; do
 	
 	let i++
 done
-# rm -rf temp/
+rm -rf temp/
+
+echo "Complete QC" | bash ~/Apps/notify-me.sh
 exit 0
