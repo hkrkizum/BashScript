@@ -16,35 +16,21 @@ mkdir -p $Output_path/
 cd $Output_path
 mkdir -p temp/
 
-find $Iput_path * | grep ^/.*.fastq.gz$ > temp/fatq1.dat
+find $Iput_path * | grep ^/.*.sra$ > temp/fatq1.dat
 awk -v WD="$Iput_path" '{sub(WD, ""); print $0}' temp/fatq1.dat > temp/fatq2.dat
-awk '{sub(".fastq.gz", ""); print $0}' temp/fatq2.dat > temp/fatq3.dat
-
-folderlist=$(<temp/fatq3.dat)
-for folder in $folderlist; do
-	mkdir -p $Output_path$folder
-done
-
+awk '{sub(".sra", ""); print $0}' temp/fatq2.dat > temp/fatq3.dat
 
 i=1
 filelist=$(<temp/fatq1.dat)
 for filepath in $filelist; do
 	foldername=`cat temp/fatq3.dat | awk -v num="$i" 'NR==num'`
-	echo "output folder is " $foldername
-	echo $filepath
-	FaQCs.pl \
-		-mode "BWA_plus" \
-		-q 30 \
-		-min_L 30 \
-		-adapter TRUE \
-		-5end  15 \
-		-t 4 \
-		-prefix $foldername \
-		-u $filepath \
-		-d $Output_path$foldername
-	echo "finished QC" $filepath | bash ~/Apps/notify-me.sh
+	echo "proceeding file is " $foldername
+	parallel-fastq-dump --sra-id ${filepath} --threads 8 --outdir ${Output_path} --tmpdir /mnt/x/tmp/ --split-files
+  	pigz -p 8 *.fastq
 	let i++
 done
 
-echo "finished" | bash ~/Apps/notify-me.sh
+rm -rf temp/
+
+echo "finish fastq-dump" | bash ~/Apps/notify-me.sh
 exit 0

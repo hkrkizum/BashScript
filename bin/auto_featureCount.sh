@@ -1,6 +1,6 @@
 #!/bin/bash
-#!/bin/bash
-mouse_annotation="/mnt/c/Bioinfomatics/Data/reference/Mouse/mouse_annotation.gtf"
+# mouse_annotation="/mnt/x/Bioinfomatics/Data/reference/Mouse/mouse_annotation.gtf"
+mouse_annotation="/mnt/x/Bioinfomatics/Data/reference/Mouse_ref_genome_STAR/Mus_musculus.GRCm38.93.gtf"
 
 CMDNAME=`basename $0`
 
@@ -21,11 +21,6 @@ mkdir -p temp/
 find $Iput_path * | grep ^/.*.bam$ > temp/fatq1.dat
 awk -v WD="$Iput_path" '{sub(WD, ""); print $0}' temp/fatq1.dat > temp/fatq2.dat
 awk '{sub("Aligned.sortedByCoord.out.bam", ""); print $0}' temp/fatq2.dat > temp/fatq3.dat
-
-folderlist=$(<temp/fatq3.dat)
-for folder in $folderlist; do
-	mkdir -p $Output_path$folder
-done
 
 i=1
 filelist=$(<temp/fatq1.dat)
