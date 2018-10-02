@@ -28,9 +28,12 @@ for filepath in $filelist; do
 	foldername=`cat temp/fatq3.dat | awk -v num="$i" 'NR==num'`
 	echo "output folder is " $foldername
 	featureCounts \
+  -p \
   -T 8 \
   -t exon \
-  -g gene_id \
+  -f \
+  -s 0 \
+  -O \
   -a $mouse_annotation \
   -o ${foldername}_count.txt \
   $filepath
