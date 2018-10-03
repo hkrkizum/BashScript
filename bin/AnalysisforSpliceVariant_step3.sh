@@ -17,11 +17,12 @@ cd $Output_path
 
 echo "Proceeding file is" $Iput_path
 
-java -jar /home/hikaru/Apps/picard/build/libs/picard.jar AddOrReplaceReadGroups \
+java -jar /home/hikaru/Apps/picard/build/libs/picard.jar MarkDuplicates \
  	I=$Iput_path \
- 	O=merged.sort.RG.bam \
- 	SO=coordinate \
- 	RGID=Test RGLB=TruSeq_RNA_stranded RGPL=illumina RGPU=HiSeq2000 RGSM=Test
+ 	O=merged.sort.RG.MD.bam \
+ 	CREATE_INDEX=true \
+ 	VALIDATION_STRINGENCY=SILENT \
+ 	M=merged.sort.RG.MD.metrics
 
 echo "Complete" $Iput_path
 echo "Complete merge" | bash ~/Apps/notify-me.sh

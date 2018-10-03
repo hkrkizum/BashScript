@@ -31,8 +31,9 @@ echo "Complete merge"
 echo "Complete merge" | bash ~/Apps/notify-me.sh
 
 echo "Bam sorting start"
-samtools sort -@ 8 merged.bam
+samtools sort -@ 8 -o merged.sort.bam merged.bam
 echo "Complete sorting"
 
+rm merged.bam
 rm -rf temp/
 echo "Complete all job" | bash ~/Apps/notify-me.sh

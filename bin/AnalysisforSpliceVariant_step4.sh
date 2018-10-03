@@ -17,11 +17,10 @@ cd $Output_path
 
 echo "Proceeding file is" $Iput_path
 
-java -jar /home/hikaru/Apps/picard/build/libs/picard.jar AddOrReplaceReadGroups \
- 	I=$Iput_path \
- 	O=merged.sort.RG.bam \
- 	SO=coordinate \
- 	RGID=Test RGLB=TruSeq_RNA_stranded RGPL=illumina RGPU=HiSeq2000 RGSM=Test
+gatk SplitNCigarReads \
+ -R /mnt/x/Bioinfomatics/Data/reference/Mouse_ref_genome_STAR/Mus_musculus.GRCm38.dna.primary_assembly.fa \
+ -I $Iput_path \
+ -O Aligned.sortedByCoord.RG.MD.SplitN.out.bam
 
 echo "Complete" $Iput_path
 echo "Complete merge" | bash ~/Apps/notify-me.sh
