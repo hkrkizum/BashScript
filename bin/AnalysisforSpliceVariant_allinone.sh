@@ -16,7 +16,7 @@ mkdir -p $Output_path/
 cd $Output_path
 mkdir temp/
 
-# Merge Bam -------------------------------------------------------------------------
+# Merge Bam ------------------------------------------------------------------------------------
 echo "Bam merge script"
 echo "Bam list:\n" `find $Iput_path * | grep ^/.*bam$`
 
@@ -26,6 +26,8 @@ awk '{sub(".bam", ""); print $0}' temp/fatq2.dat > temp/fatq3.dat
 
 filelist=$(<temp/fatq1.dat)
 echo "Bam merge start"
+source activate bioconda
+
 samtools merge -@ 8 merged.bam $filelist
 echo "Complete merge"
 echo "Complete merge" | bash ~/Apps/notify-me.sh
@@ -34,7 +36,7 @@ echo "Bam sorting start"
 samtools sort -@ 8 -o merged.sort.bam merged.bam
 echo "Complete sorting"
 
-rm merged.bam
+# rm merged.bam
 rm -rf temp/
 
 # AddOrReplaceReadGroups -------------------------------------------------------------------------
@@ -45,7 +47,7 @@ java -jar /home/hikaru/Apps/picard/build/libs/picard.jar AddOrReplaceReadGroups 
  	SO=coordinate \
  	RGID=Test RGLB=TruSeq_RNA_stranded RGPL=illumina RGPU=HiSeq2000 RGSM=Test
 
-rm merged.sort.bam
+# rm merged.sort.bam
 
 echo "AddOrReplaceReadGroups Complete"
 echo "AddOrReplaceReadGroups Complete" | bash ~/Apps/notify-me.sh
@@ -60,7 +62,7 @@ java -jar /home/hikaru/Apps/picard/build/libs/picard.jar MarkDuplicates \
  	VALIDATION_STRINGENCY=SILENT \
  	M=merged.sort.RG.MD.metrics
 
-rm merged.sort.RG.bam
+# rm merged.sort.RG.bam
 
 echo "MarkDuplicates Complete"
 echo "MarkDuplicates Complete" | bash ~/Apps/notify-me.sh
@@ -69,11 +71,11 @@ echo "MarkDuplicates Complete" | bash ~/Apps/notify-me.sh
 echo "SplitNCigarReads start"
 
 gatk SplitNCigarReads \
- -R $DataDir/genome.fa \
+ -R /mnt/x/Bioinfomatics/Data/reference/Mouse_ref_genome_STAR/Mus_musculus.GRCm38.dna.primary_assembly.fa \
  -I merged.sort.RG.MD.bam \
  -O merged.sort.RG.MD.SplitN.bam
 
-rm merged.sort.RG.MD.bam
+# rm merged.sort.RG.MD.bam
 
 echo "SplitNCigarReads Complete"
 echo "SplitNCigarReads Complete" | bash ~/Apps/notify-me.sh
