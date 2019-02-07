@@ -1,79 +1,73 @@
 #!/bin/bash
-while getopts i:o: OPT
+while getopts f:r:o: OPT
 do
   case $OPT in
-    "i" ) FLG_A="TRUE" ; Iput_path="$OPTARG" ;;
-    "o" ) FLG_B="TRUE" ; Output_path="$OPTARG" ;;
-      * ) echo "Usage: $CMDNAME [-i VALUE] [-o VALUE] " 1>&2
+    "f" ) FLG_A="TRUE" ; Iput_path_f="$OPTARG" ;;
+	"r" ) FLG_B="TRUE" ; Iput_path_r="$OPTARG" ;;
+    "o" ) FLG_C="TRUE" ; Output_path="$OPTARG" ;;
+      * ) echo "Usage: $CMDNAME [-f VALUE] [-r VALUE] [-o VALUE] " 1>&2
           exit 1 ;;
   esac
 done
 
+CurrentDir=`pwd` # 現在のDir取得
+Iput_path_f_ab=`realpath $Iput_path_f`
+Iput_path_r_ab=`realpath $Iput_path_r`
+
+# Inputのファイル数チェック
+Check_fileN1=`cat $Iput_path_f_ab | wc -l`
+Check_fileN2=`cat $Iput_path_r_ab | wc -l`
+if [ $Check_fileN1 = $Check_fileN2 ]; then
+	echo "File number is same"  $Check_fileN1 $Check_fileN2
+else
+	echo "File number is not same:" $Check_fileN1 $Check_fileN2
+fi
+
+# アウトプット先の作成
 mkdir -p $Output_path/
 cd $Output_path
-mkdir -p temp/
+echo $Output_path
 
-# parallel gzip in input dir
-fastq_list=`find $Iput_path * | grep ^/.*.fastq$`
-pigz $fastq_list
-echo "gzip complete"
-
-# Get file list
-find $Iput_path * | grep ^/.*_1.fastq.gz$ > temp/fatq1_fo.dat
-awk -v WD="$Iput_path" '{sub(WD, ""); print $0}' temp/fatq1_fo.dat > temp/fatq2_fo.dat
-awk '{sub("_1.fastq.gz", ""); print $0}' temp/fatq2_fo.dat > temp/fatq3_fo.dat
-
-find $Iput_path * | grep ^/.*_2.fastq.gz$ > temp/fatq1_rv.dat
-awk -v WD="$Iput_path" '{sub(WD, ""); print $0}' temp/fatq1_rv.dat > temp/fatq2_rv.dat
-awk '{sub(".fastq.gz", ""); print $0}' temp/fatq2_rv.dat > temp/fatq3_rv.dat
-
-
-i=1
-filelist_foword=$(<temp/fatq1_fo.dat)
-filelist_reverse=$(<temp/fatq1_rv.dat)
-for filepath in $filelist_foword; do
-	# リストのファイル名をループ回数に応じて取得、変数へ格納
-	foldername=`cat temp/fatq3_fo.dat | awk -v num="$i" 'NR==num'`
-
-	foword=`cat temp/fatq1_fo.dat | awk -v num="$i" 'NR==num'`
-	reverse=`cat temp/fatq1_rv.dat | awk -v num="$i" 'NR==num'`
-	echo "Proceeding file is " $foldername
+for i in $(seq 1 ${Check_fileN1}); do
+	echo "Readline:" $i
+	# i行目を取得
+	foword=`head -n $i $Iput_path_f_ab | tail -n 1`
+	reverse=`head -n $i $Iput_path_r_ab | tail -n 1`
 
 	# gzファイルを展開
 	unpigz $foword
 	unpigz $reverse
 	echo "gunzip complete"
 
-	#展開したファイルを絶対PATHで取得し、変数へ格納
-	Input_fastq_foword=`find ${Iput_path} * | grep ^/.*_1.fastq$`
-	Input_fastq_reverse=`find ${Iput_path} * | grep ^/.*_2.fastq$`
-	echo "QC file is " $Input_fastq_foword $Input_fastq_reverse
+	# 共通名を取得
+	foldername=`basename $foword | perl -pe 's/\.fastq\.gz//'`
+	# 拡張子(.gz)を除いたファイル名(=解凍後のfastqファイル)名取得
+	foword_name=`basename ${foword:0:-3}`
+	reverse_name=`basename ${reverse:0:-3}`
 
+	# fastp実行
 	fastp \
-	--in1 $Input_fastq_foword \
-	--in2 $Input_fastq_reverse \
-	--out1 ${foldername}_output_1.fastq \
-	--out2 ${foldername}_output_2.fastq \
+	--in1 ${foword:0:-3} \
+	--in2 ${reverse:0:-3} \
+	--out1 ${foword_name:0:-6}_Filtered.fastq \
+	--out2 ${reverse_name:0:-6}_Filtered.fastq \
 	--html ${foldername}.html \
 	--json ${foldername}.json \
 	--thread 8 \
 	--qualified_quality_phred 30 \
-	--trim_front1 15
+	--trim_poly_x
 
-	echo "trimmeing complete" $foldername
-	echo "trimmeing complete" $foldername | bash ~/Apps/notify-me.sh
-
-	#展開したfastqを再圧縮
+	# 実行後のファイルを圧縮
 	pigz *.fastq
 
-	#展開したfastqを再圧縮
-	pigz $Input_fastq_foword
-	pigz $Input_fastq_reverse
+	#展開した元fastqを再圧縮
+	pigz ${foword:0:-3}
+	pigz ${reverse:0:-3}
 	echo "pigz complete, finesh"
-	
-	let i++
-done
-rm -rf temp/
 
-echo "Complete QC" | bash ~/Apps/notify-me.sh
-exit 0
+done
+
+
+
+cd $CurrentDir
+
