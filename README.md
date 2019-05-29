@@ -33,11 +33,11 @@ Check PATH to softwares
 
 ``` bash
 $ STAR --version
-2.7
+2.7.1a
 $ fastp --version
 
 $ featureCount --version
-
+featureCounts v1.6.4
 ```
 
 Pull repository
