@@ -1,11 +1,12 @@
 #!/bin/bash
-while getopts f:r:o: OPT
+while getopts g:f:r:o: OPT
 do
   case $OPT in
-    "f" ) FLG_A="TRUE" ; Iput_path_f="$OPTARG" ;;
-	"r" ) FLG_B="TRUE" ; Iput_path_r="$OPTARG" ;;
-    "o" ) FLG_C="TRUE" ; Output_path="$OPTARG" ;;
-      * ) echo "Usage: $CMDNAME [-f VALUE] [-r VALUE] [-o VALUE] " 1>&2
+  	"g" ) FLG_A="TRUE" ; Genome_path="$OPTARG" ;;
+    "f" ) FLG_B="TRUE" ; Iput_path_f="$OPTARG" ;;
+	"r" ) FLG_C="TRUE" ; Iput_path_r="$OPTARG" ;;
+    "o" ) FLG_D="TRUE" ; Output_path="$OPTARG" ;;
+      * ) echo "Usage: $CMDNAME [-g VALUE] [-f VALUE] [-r VALUE] [-o VALUE] " 1>&2
           exit 1 ;;
   esac
 done
@@ -48,7 +49,7 @@ for i in $(seq 1 ${Check_fileN1}); do
 	echo $reverse_name
 
 	#STAR実行
-	STAR --genomeDir /mnt/x/Bioinfomatics/Data/reference/Rat_ref_genome_STAR \
+	STAR --genomeDir ${Genome_path} \
 	--readFilesIn ${foword:0:-3} ${reverse:0:-3} \
 	--runThreadN 6 \
  	--outSAMtype BAM SortedByCoordinate --outFileNamePrefix  $foldername
@@ -60,8 +61,6 @@ for i in $(seq 1 ${Check_fileN1}); do
 
 done
 
-echo "finished" | bash ~/Apps/notify-me.sh
 echo "finished"
-
 cd $CurrentDir
 
