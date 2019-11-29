@@ -30,12 +30,14 @@ cd $Output_path
 echo $Output_path
 
 for i in $(seq 1 ${Check_fileN1}); do
+	echo "---------------------------------------------------------"
 	echo "Readline:" $i
 	# i行目を取得
 	foword=`head -n $i $Iput_path_f_ab | tail -n 1`
 	reverse=`head -n $i $Iput_path_r_ab | tail -n 1`
 
 	# gzファイルを展開
+	echo "gunzip start........"
 	unpigz $foword
 	unpigz $reverse
 	echo "gunzip complete"
@@ -49,12 +51,16 @@ for i in $(seq 1 ${Check_fileN1}); do
 	echo $reverse_name
 
 	#STAR実行
-	STAR --genomeDir ${Genome_path} \
+	STAR \
+	--genomeDir ${Genome_path} \
 	--readFilesIn ${foword:0:-3} ${reverse:0:-3} \
-	--runThreadN 6 \
- 	--outSAMtype BAM SortedByCoordinate --outFileNamePrefix  $foldername
+	--runThreadN 8 \
+ 	--outSAMtype BAM SortedByCoordinate \
+ 	--outFileNamePrefix $foldername \
+ 	--outFilterMultimapNmax 1
 
 	#展開した元fastqを再圧縮
+	echo "fastq pigz start........"
 	pigz ${foword:0:-3}
 	pigz ${reverse:0:-3}
 	echo "pigz complete, finesh"

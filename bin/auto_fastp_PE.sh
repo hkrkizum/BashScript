@@ -35,7 +35,7 @@ for i in $(seq 1 ${Check_fileN1}); do
 	foword=`head -n $i $Iput_path_f_ab | tail -n 1`
 	reverse=`head -n $i $Iput_path_r_ab | tail -n 1`
 	echo "Foward: ${foword}"
-	echo "Foward: ${reverse}"
+	echo "reverse: ${reverse}"
 
 	# gzファイルを展開
 	# echo "gunzip start........"
@@ -54,8 +54,8 @@ for i in $(seq 1 ${Check_fileN1}); do
 	fastp \
 	--in1 ${foword} \
 	--in2 ${reverse} \
-	--out1 ${foword:0:-9}_Filtered.fastq \
-	--out2 ${reverse:0:-9}_Filtered.fastq \
+	--out1 ${foword:0:-9}_Filtered.fastq.gz \
+	--out2 ${reverse:0:-9}_Filtered.fastq.gz \
 	--html ${foldername}.html \
 	--json ${foldername}.json \
 	--thread 8 \
